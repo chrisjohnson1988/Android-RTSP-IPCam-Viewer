@@ -50,6 +50,8 @@ dependencies {
 
     implementation 'com.google.code.gson:gson:'                              + '2.8.5'                               // (235 KB) https://mvnrepository.com/artifact/com.google.code.gson/gson
 
+    implementation 'ua.polohalo.zoomabletextureview:zoomabletextureview:'    + '1.0.0'
+
     implementation project(':MaterialFilePicker')                                                                    //          https://github.com/nbsp-team/MaterialFilePicker
 
     implementation project(':exoplayer-core')

@@ -5,9 +5,12 @@ import com.github.warren_bank.rtsp_ipcam_viewer.R;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.TextureView;
 
+import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.RenderersFactory;
@@ -18,15 +21,12 @@ import com.google.android.exoplayer2.source.rtsp.RtspDefaultClient;
 import com.google.android.exoplayer2.source.rtsp.RtspMediaSource;
 import com.google.android.exoplayer2.source.rtsp.core.Client;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
-import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
 public class VideoActivity extends AppCompatActivity {
     private static final String EXTRA_URL = "URL";
 
-    private PlayerView view;
     private SimpleExoPlayer exoPlayer;
     private DefaultHttpDataSourceFactory dataSourceFactory;
     private String url;
@@ -37,19 +37,21 @@ public class VideoActivity extends AppCompatActivity {
 
         setContentView(R.layout.fullscreen_view_activities_videoactivity);
 
-        this.view = (PlayerView) findViewById(R.id.player_view);
+        TextureView view = findViewById(R.id.player_view);
 
         Context context = (Context) this;
         DefaultTrackSelector trackSelector = new DefaultTrackSelector();
         RenderersFactory renderersFactory = new DefaultRenderersFactory(context);
-        this.exoPlayer = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector);
+        DefaultLoadControl loadControl =  new DefaultLoadControl.Builder()
+                .setBufferDurationsMs(50, 250, 50, 50)
+                .createDefaultLoadControl();
+
+        this.exoPlayer = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, loadControl);
 
         String userAgent = context.getResources().getString(R.string.user_agent);
         this.dataSourceFactory = new DefaultHttpDataSourceFactory(userAgent);
 
-        this.view.setUseController(true);
-        this.view.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH);
-        this.view.setPlayer(this.exoPlayer);
+        this.exoPlayer.setVideoTextureView(view);
 
         Intent intent = getIntent();
         if (intent.hasExtra(EXTRA_URL)) {

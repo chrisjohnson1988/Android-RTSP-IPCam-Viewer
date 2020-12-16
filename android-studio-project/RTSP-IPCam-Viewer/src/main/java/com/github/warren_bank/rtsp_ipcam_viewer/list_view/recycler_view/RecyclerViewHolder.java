@@ -12,6 +12,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.RenderersFactory;
@@ -63,7 +64,10 @@ public final class RecyclerViewHolder extends RecyclerView.ViewHolder implements
         Context context = view.getContext();
         DefaultTrackSelector trackSelector = new DefaultTrackSelector();
         RenderersFactory renderersFactory = new DefaultRenderersFactory(context);
-        this.exoPlayer = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector);
+        DefaultLoadControl loadControl =  new DefaultLoadControl.Builder()
+                .setBufferDurationsMs(50, 250, 50, 50)
+                .createDefaultLoadControl();
+        this.exoPlayer = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, loadControl);
 
         String userAgent = context.getResources().getString(R.string.user_agent);
         this.dataSourceFactory = new DefaultHttpDataSourceFactory(userAgent);
