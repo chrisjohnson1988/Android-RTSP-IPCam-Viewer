@@ -42,6 +42,7 @@
             android:name=".fullscreen_view.activities.VideoActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="landscape"
+            android:keepScreenOn="true"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode" />
 
         <activity

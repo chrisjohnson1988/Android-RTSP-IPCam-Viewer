@@ -2,29 +2,44 @@ package com.github.warren_bank.rtsp_ipcam_viewer.fullscreen_view.activities;
 
 import com.github.warren_bank.rtsp_ipcam_viewer.R;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.TextureView;
 
+import com.github.warren_bank.rtsp_ipcam_viewer.common.helpers.KeepVideoPlaying;
+import com.github.warren_bank.rtsp_ipcam_viewer.common.helpers.VideoPlayer;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
+import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.RenderersFactory;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.LoopingMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.rtsp.RtspDefaultClient;
 import com.google.android.exoplayer2.source.rtsp.RtspMediaSource;
 import com.google.android.exoplayer2.source.rtsp.core.Client;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.google.android.exoplayer2.upstream.DefaultLoadErrorHandlingPolicy;
 import com.google.android.exoplayer2.util.Util;
 
-public class VideoActivity extends AppCompatActivity {
+import java.io.IOException;
+
+public class VideoActivity extends AppCompatActivity implements VideoPlayer {
     private static final String EXTRA_URL = "URL";
 
     private SimpleExoPlayer exoPlayer;
@@ -39,33 +54,38 @@ public class VideoActivity extends AppCompatActivity {
 
         TextureView view = findViewById(R.id.player_view);
 
-        Context context = (Context) this;
         DefaultTrackSelector trackSelector = new DefaultTrackSelector();
-        RenderersFactory renderersFactory = new DefaultRenderersFactory(context);
+        RenderersFactory renderersFactory = new DefaultRenderersFactory(this);
         DefaultLoadControl loadControl =  new DefaultLoadControl.Builder()
-                .setBufferDurationsMs(50, 250, 50, 50)
+                .setBufferDurationsMs(100, 500, 100, 100)
                 .createDefaultLoadControl();
 
-        this.exoPlayer = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, loadControl);
-
-        String userAgent = context.getResources().getString(R.string.user_agent);
+        this.exoPlayer = ExoPlayerFactory.newSimpleInstance(this, renderersFactory, trackSelector, loadControl);
+        String userAgent = getResources().getString(R.string.user_agent);
         this.dataSourceFactory = new DefaultHttpDataSourceFactory(userAgent);
 
         this.exoPlayer.setVideoTextureView(view);
 
+        Handler handler = new Handler();
+        handler.post(new KeepVideoPlaying(handler, exoPlayer, this));
+
         Intent intent = getIntent();
         if (intent.hasExtra(EXTRA_URL)) {
             this.url = intent.getStringExtra(EXTRA_URL);
-
-            prepare();
         }
+    }
+
+    @Override
+    public void startVideo() {
+        prepare();
+        play();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        play();
+        startVideo();
     }
 
     @Override
@@ -101,13 +121,6 @@ public class VideoActivity extends AppCompatActivity {
     private void play() {
         try {
             exoPlayer.setPlayWhenReady(true);
-        }
-        catch (Exception e){}
-    }
-
-    private void pause() {
-        try {
-            exoPlayer.setPlayWhenReady(false);
         }
         catch (Exception e){}
     }

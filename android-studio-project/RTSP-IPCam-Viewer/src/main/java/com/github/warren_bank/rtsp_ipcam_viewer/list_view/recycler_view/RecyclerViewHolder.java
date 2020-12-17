@@ -2,11 +2,14 @@ package com.github.warren_bank.rtsp_ipcam_viewer.list_view.recycler_view;
 
 import com.github.warren_bank.rtsp_ipcam_viewer.R;
 import com.github.warren_bank.rtsp_ipcam_viewer.common.data.VideoType;
+import com.github.warren_bank.rtsp_ipcam_viewer.common.helpers.KeepVideoPlaying;
+import com.github.warren_bank.rtsp_ipcam_viewer.common.helpers.VideoPlayer;
 import com.github.warren_bank.rtsp_ipcam_viewer.fullscreen_view.activities.VideoActivity;
 
 import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
 import android.net.Uri;
+import android.os.Handler;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -28,7 +31,7 @@ import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
-public final class RecyclerViewHolder extends RecyclerView.ViewHolder implements View.OnTouchListener, GestureDetector.OnGestureListener {
+public final class RecyclerViewHolder extends RecyclerView.ViewHolder implements View.OnTouchListener, GestureDetector.OnGestureListener, VideoPlayer {
 
     private PlayerView view;
     private TextView title;
@@ -65,7 +68,7 @@ public final class RecyclerViewHolder extends RecyclerView.ViewHolder implements
         DefaultTrackSelector trackSelector = new DefaultTrackSelector();
         RenderersFactory renderersFactory = new DefaultRenderersFactory(context);
         DefaultLoadControl loadControl =  new DefaultLoadControl.Builder()
-                .setBufferDurationsMs(50, 250, 50, 50)
+                .setBufferDurationsMs(100, 500, 100, 100)
                 .createDefaultLoadControl();
         this.exoPlayer = ExoPlayerFactory.newSimpleInstance(context, renderersFactory, trackSelector, loadControl);
 
@@ -80,22 +83,21 @@ public final class RecyclerViewHolder extends RecyclerView.ViewHolder implements
         this.view.setPlayer(this.exoPlayer);
 
         this.exoPlayer.setVolume(0f);  // mute all videos in list view
+
+        Handler handler = new Handler();
+        handler.post(new KeepVideoPlaying(handler, exoPlayer, this));
     }
 
-    public void bind(VideoType data) {
-        this.data = data;
-        this.title.setText(data.title);
-
-        stop();
-
+    @Override
+    public void startVideo() {
         Uri uri = Uri.parse(data.URL_low_res);
         MediaSource source;
 
         if (Util.isRtspUri(uri)) {
             source = new RtspMediaSource.Factory(RtspDefaultClient.factory()
-                .setFlags(Client.FLAG_ENABLE_RTCP_SUPPORT)
-                .setNatMethod(Client.RTSP_NAT_DUMMY))
-                .createMediaSource(uri);
+                    .setFlags(Client.FLAG_ENABLE_RTCP_SUPPORT)
+                    .setNatMethod(Client.RTSP_NAT_DUMMY))
+                    .createMediaSource(uri);
         } else {
             source = new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(uri);
         }
@@ -103,6 +105,14 @@ public final class RecyclerViewHolder extends RecyclerView.ViewHolder implements
         exoPlayer.prepare(source);
 
         play();
+    }
+
+    public void bind(VideoType data) {
+        this.data = data;
+        this.title.setText(data.title);
+
+        stop();
+        startVideo();
     }
 
     public void play() {
