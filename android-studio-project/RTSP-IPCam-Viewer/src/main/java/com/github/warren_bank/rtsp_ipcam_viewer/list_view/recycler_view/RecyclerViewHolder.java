@@ -151,16 +151,6 @@ public final class RecyclerViewHolder extends RecyclerView.ViewHolder implements
         );
     }
 
-    // toggle play/pause of selected video
-    private void doOnLongClick() {
-        try {
-            exoPlayer.setPlayWhenReady(
-                !exoPlayer.getPlayWhenReady()
-            );
-        }
-        catch (Exception e){}
-    }
-
     // interface: View.OnTouchListener
 
     public boolean onTouch(View v, MotionEvent e) {
@@ -177,7 +167,6 @@ public final class RecyclerViewHolder extends RecyclerView.ViewHolder implements
 
     @Override
     public void onLongPress(MotionEvent e) {
-        doOnLongClick();
     }
 
     @Override
