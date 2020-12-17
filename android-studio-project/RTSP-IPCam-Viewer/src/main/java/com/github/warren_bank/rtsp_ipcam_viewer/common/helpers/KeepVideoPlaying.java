@@ -18,7 +18,7 @@ public class KeepVideoPlaying implements Runnable {
     }
 
     public void run() {
-        handler.postDelayed(this, 5000);
+        handler.postDelayed(this, 3000);
         if(contentPosition == exoPlayer.getContentPosition()) {
             videoPlayer.startVideo();
         }
