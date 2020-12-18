@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.TextureView;
+import android.view.WindowManager;
 
 import com.github.warren_bank.rtsp_ipcam_viewer.common.helpers.KeepVideoPlaying;
 import com.github.warren_bank.rtsp_ipcam_viewer.common.helpers.VideoPlayer;
@@ -45,10 +46,13 @@ public class VideoActivity extends AppCompatActivity implements VideoPlayer {
     private SimpleExoPlayer exoPlayer;
     private DefaultHttpDataSourceFactory dataSourceFactory;
     private String url;
+    private boolean stopped;
+    private boolean paused;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.fullscreen_view_activities_videoactivity);
 
@@ -84,22 +88,34 @@ public class VideoActivity extends AppCompatActivity implements VideoPlayer {
     @Override
     protected void onResume() {
         super.onResume();
-
+        paused = false;
         startVideo();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-
+        paused = true;
         stop();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        stopped = true;
 
         release();
+    }
+
+
+    @Override
+    public boolean isStopped(){
+        return stopped;
+    }
+
+    @Override
+    public boolean isPaused() {
+        return paused;
     }
 
     private void prepare() {

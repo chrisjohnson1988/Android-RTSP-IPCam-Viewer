@@ -17,6 +17,8 @@ import com.github.warren_bank.rtsp_ipcam_viewer.common.activities.ExitActivity;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.widget.Toolbar;
+
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -91,9 +93,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 );
                 return true;
-            case R.id.action_open_list:
-                ListActivity.open(MainActivity.this, null);
-                return true;
             case R.id.action_open_grid_2col:
                 GridActivity.open(MainActivity.this, null, 2);
                 return true;
@@ -151,5 +150,12 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         FilePicker.ResultHandler.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public static void open(Context context) {
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_TASK_ON_HOME);
+        context.startActivity(intent);
     }
 }

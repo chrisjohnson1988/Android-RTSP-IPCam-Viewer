@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -38,6 +39,7 @@ public final class RecyclerViewHolder extends RecyclerView.ViewHolder implements
     private SimpleExoPlayer exoPlayer;
     private DefaultHttpDataSourceFactory dataSourceFactory;
     private GestureDetector gestureDetector;
+    private boolean stopped;
 
     private VideoType data;
 
@@ -111,7 +113,6 @@ public final class RecyclerViewHolder extends RecyclerView.ViewHolder implements
         this.data = data;
         this.title.setText(data.title);
 
-        stop();
         startVideo();
     }
 
@@ -122,25 +123,24 @@ public final class RecyclerViewHolder extends RecyclerView.ViewHolder implements
         catch (Exception e){}
     }
 
-    public void pause() {
-        try {
-            exoPlayer.setPlayWhenReady(false);
-        }
-        catch (Exception e){}
-    }
-
     public void stop() {
-        try {
-            exoPlayer.stop(true);
-        }
-        catch (Exception e){}
-    }
 
-    public void release() {
         try {
+            stopped = true;
+            exoPlayer.stop(true);
             exoPlayer.release();
         }
         catch (Exception e){}
+    }
+
+    @Override
+    public boolean isPaused(){
+        return false;
+    }
+
+    @Override
+    public boolean isStopped(){
+        return stopped;
     }
 
     // open selected video in fullscreen view
